@@ -50,7 +50,7 @@ class CoursePlan extends Component {
         let payload = new FormData();
         payload.append("token", Auth.getToken());
         payload.append("plan_hash", planHash);
-        const response = await fetch('/get_plan_data', {
+        const response = await fetch('https://tddd27-nikha864-backend.herokuapp.com/get_plan_data', {
             method: 'post',
             body: payload
         });
