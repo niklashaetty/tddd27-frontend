@@ -1,0 +1,38 @@
+@import url('https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css');
+@import url('https://fonts.googleapis.com/css?family=Libre+Franklin');
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
+.link_name{
+  float:left;
+  text-align: left;
+  width: 99%;
+  height: 23px;
+  line-height: 23px;
+  font-size: 11px;
+  color: #77898C;
+  font-family: 'Libre Franklin', sans-serif;
+  padding: 0 0 0 5px;
+  margin: 0;
+
+
+}
+
+.link_name:hover {
+  color: black;
+}
+
+.planner_link{
+  clear:both;
+height: 23px;
+  cursor: pointer;
+}
+
+.planner_link:hover{
+  background-color: #F2F8FA;
+  cursor: pointer;
+}
+
+.button_div{
+  margin: auto;
+  width: 140px;
+}
