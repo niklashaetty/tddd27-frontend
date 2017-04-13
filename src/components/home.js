@@ -1,9 +1,7 @@
 /* Components related to the home page such as the register and login forms */
 
 import React, {Component} from 'react';
-import {RouteTransition} from 'react-router-transition';
 import {browserHistory} from 'react-router';
-import FontAwesome from 'react-fontawesome';
 import '../css/header.css';
 import '../css/home.css';
 import '../index.css';
@@ -94,7 +92,7 @@ class RegisterForm extends React.Component {
 
     // Validate a submission on client side. If fail, set states so that responseMessage will be shown.
     validSubmission = () => {
-        if (this.state.password.length < 7) {
+        if (this.state.password.length < 8) {
             this.setState({
                 responseMessage: 'Password must be at least 8 characters',
                 positiveResponse: false,
@@ -113,7 +111,7 @@ class RegisterForm extends React.Component {
         else {
             return true;
         }
-    }
+    };
 
     // Handle the submission of a form
     async handleSubmit(event) {
@@ -207,7 +205,6 @@ class LoginForm extends React.Component {
         };
     }
 
-
     // Reset form.
     resetForm() {
         this.setState({
@@ -228,9 +225,9 @@ class LoginForm extends React.Component {
         else {
             return true;
         }
-    }
+    };
 
-// Handle the submission of a form
+    // Handle the submission of a form
     async handleSubmit(event) {
         event.preventDefault();
 
@@ -274,7 +271,6 @@ class LoginForm extends React.Component {
             method: 'post',
             body: payload
         });
-
         return await response.json();
     }
 
@@ -309,8 +305,6 @@ class LoginForm extends React.Component {
                           message={this.state.responseMessage}/>
           </div>
         );
-
-
     }
 }
 
@@ -321,16 +315,17 @@ class Home extends Component {
         this.state = {
             showSignup: true,
         };
-
     }
 
+    // Handle swap of login/create account
     handleSwap = () => {
         this.setState({showSignup: !this.state.showSignup});
-    }
+    };
 
     render() {
         let display = null;
 
+        // Show either register or login form
         if (this.state.showSignup) {
             display = <RegisterForm />
         }
