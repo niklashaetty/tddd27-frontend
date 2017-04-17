@@ -11,10 +11,24 @@
   font-size: 11px;
   color: #77898C;
   font-family: 'Libre Franklin', sans-serif;
+  margin: 0;
+}
+
+.info_text{
+  float:left;
+  text-align: left;
+  width: 99%;
+  height: 23px;
+  line-height: 23px;
+  font-size: 11px;
+  color: #77898C;
+  font-family: 'Libre Franklin', sans-serif;
   padding: 0 0 0 5px;
   margin: 0;
+}
 
-
+.course_plans{
+  height: 235px;
 }
 
 .link_name:hover {
@@ -28,11 +42,20 @@ height: 23px;
 }
 
 .planner_link:hover{
-  background-color: #F2F8FA;
   cursor: pointer;
 }
 
+.new_plan_wrapper{
+  width: 300px;
+  margin:auto;
+}
+
+.plan_text_field{
+  float:left;
+  width: 160px;
+}
+
 .button_div{
-  margin: auto;
+  float:left;
   width: 140px;
 }
