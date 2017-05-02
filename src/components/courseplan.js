@@ -1,19 +1,26 @@
 /**
- * Created by iinh on 4/11/17.
+ * This module contains all components related to rendering a course plan.
+ *
+ * CourseDashBoard:
+ *  The bottom component that provides feedback on a course plan
+ *
+ * Semester:
+ *  One semester component, contains the information of courses in one semester
+ *
+ * CoursePlan:
+ *  The main component that ties everything together.
+ *
  */
 import React, {Component} from 'react';
 import {browserHistory} from 'react-router';
 
-
 // Material UI
 import FontIcon from 'material-ui/FontIcon';
 import LinearProgress from 'material-ui/LinearProgress';
-import Divider from 'material-ui/Divider';
 import RaisedButton from 'material-ui/RaisedButton';
 import Dialog from 'material-ui/Dialog';
 import FlatButton from 'material-ui/FlatButton';
 import CircularProgress from 'material-ui/CircularProgress';
-
 
 // CSS
 import '../css/contentboxes.css';
@@ -37,8 +44,9 @@ const styles = {
     }
 };
 
-// Dashboard for one course plan
-class CourseDashBoard extends Component {
+/** Dashboard for one course plan.
+ *  Renders feedback for a course plan. */
+export class CourseDashBoard extends Component {
     constructor(props) {
         super(props);
         this.deleteCoursePlan = this.deleteCoursePlan.bind(this);
@@ -46,7 +54,7 @@ class CourseDashBoard extends Component {
             openDialog: false,
             maxAdvancedECTS: 60,
             maxECTS: 90,
-            scheduleConflict: true,
+            editMode: this.props.editMode
         };
     }
 
@@ -57,6 +65,27 @@ class CourseDashBoard extends Component {
 
     handleCloseDialog = () => {
         this.setState({openDialog: false});
+    };
+
+    // Handle opening of editor
+    openEditor = () => {
+        let path = "/p/" + this.props.planHash + "/edit";
+        browserHistory.push({
+            pathname: path,
+            state: {username: this.props.username,
+                planHash: this.props.planHash}
+        });
+
+    };
+
+    // Handle closing of editor
+    exitEditor = () => {
+        let path = "/p/" + this.props.planHash;
+        browserHistory.push({
+            pathname: path,
+            state: {username: this.props.username}
+        });
+
     };
 
     // Send a request to the server to delete a course plan
@@ -71,13 +100,12 @@ class CourseDashBoard extends Component {
         });
         let response = await request.json();
 
-        console.log(response.message);
         // Deletion successful, push user back to dashboard!
         if(response.success){
             browserHistory.push({
-            pathname: '/dashboard',
-            state: {username: this.props.username}
-        });
+                pathname: '/dashboard',
+                state: {username: this.props.username}
+            });
         }
 
         // TODO: IN CASE DELETION FAILED; FIX
@@ -102,7 +130,6 @@ class CourseDashBoard extends Component {
 
     render() {
         let dialogActions = this.defineActions();
-        console.log(this.props.advancedECTS);
 
         // Define icons
         const positiveIcon = <FontIcon
@@ -125,25 +152,49 @@ class CourseDashBoard extends Component {
         // Check what type of icon should be displayed
         let advancedECTSIcon = (this.props.advancedECTS >= this.state.maxAdvancedECTS) ? positiveIcon : negativeIcon;
         let ECTSIcon = (this.props.ects >= this.state.maxECTS) ? positiveIcon : negativeIcon;
-        let scheduleConflictIcon = warningIcon; // TODO: FIX LOGIC
+        let scheduleConflictIcon = this.props.scheduleConflict ? warningIcon: positiveIcon;
 
-        // If
+        // Check for scheduling conflicts
         let scheduleConflict;
-        if(this.state.scheduleConflict){
+        if(this.props.scheduleConflict){
             scheduleConflict =
-              <span className="hint--top hint--warning hint--rounded hint--large" aria-label="You have scheduling conflicts. This means two courses run on the same block, at the same time.">
+              <span className="hint--top hint--warning hint--rounded hint--large" aria-label="This plan contains scheduling conflicts. This means two courses run on the same block, at the same time.">
                   <div className="field">
-                        {scheduleConflictIcon} You have scheduling conflicts
+                        {scheduleConflictIcon} Scheduling conflicts
                   </div>
-              </span>;
+              </span>
         }
         else{
             scheduleConflict =
               <div className="field">
-                  {scheduleConflictIcon} Advanced ETCS points: {this.props.advancedECTS}/{this.state.maxAdvancedECTS}
+                  {scheduleConflictIcon} No scheduling conflicts!
               </div>
         }
 
+        // Hide edit buttons if in editor mode
+        let editButton;
+        if(this.state.editMode){
+            editButton = <div className="field_sidebyside">
+                <RaisedButton
+                  target="_blank"
+                  label="Back"
+                  disabled={!this.props.allowEdit}
+                  style={styles.button}
+                  onTouchTap={this.exitEditor}
+                />
+            </div>;
+        }
+        else{
+            editButton = <div className="field_sidebyside">
+                <RaisedButton
+                  target="_blank"
+                  label="Edit"
+                  disabled={!this.props.allowEdit}
+                  style={styles.button}
+                  onTouchTap={this.openEditor}
+                />
+            </div>;
+        }
 
         return(
           <div>
@@ -184,32 +235,22 @@ class CourseDashBoard extends Component {
                   </div>
                   <div className="box_content_right">
                       <div className="field_small">
-                          Programme: {this.props.programme}
-                      </div>
-                      <div className="field_small">
-                          Profile: {this.props.profile}
-                      </div>
-                      <div className="field_small">
                           Course plan name: {this.props.name}
                       </div>
                       <div className="field_small">
                           Created by: {this.props.owner}
                       </div>
+                      <div className="field_small">
+                          Programme: {this.props.programme}
+                      </div>
+                      <div className="field_small">
+                          Profile: {this.props.profile}
+                      </div>
 
                       <div className="field">
-
                       </div>
 
-                      <div className="field_sidebyside">
-                          <RaisedButton
-                            target="_blank"
-                            label="Edit"
-                            disabled={!this.props.allowEdit}
-                            style={styles.button}
-                          />
-
-                      </div>
-
+                      {editButton}
                       <div className="field_sidebyside">
                           <RaisedButton
                             target="_blank"
@@ -238,7 +279,7 @@ class CourseDashBoard extends Component {
     }
 }
 
-// One semester component
+/** Semester component with courses and box for ONE semester */
 class Semester extends Component {
     constructor(props) {
         super(props);
@@ -272,11 +313,14 @@ class Semester extends Component {
         }
         this.setState({
             boxClassName: boxClassName,
-            semester: this.props.semester
+            semester: this.props.semester,
+            scheduleConflict: this.props.scheduleConflict
         });
     }
 
     render() {
+
+        // Table head
         let tableHead = <thead>
         <tr className="table_header">
             <td className="table_small">Block</td>
@@ -292,6 +336,9 @@ class Semester extends Component {
         </thead>;
 
         let row;
+
+
+        // Period 1
         let period1Rows = this.props.semester.period1.map(function(obj){
             row = <tr>
                 <td>{obj.block}</td>
@@ -303,6 +350,7 @@ class Semester extends Component {
             return row;
         });
 
+        // Period 2
         let period2Rows = this.props.semester.period2.map(function(obj){
             row = <tr>
                 <td>{obj.block}</td>
@@ -313,6 +361,14 @@ class Semester extends Component {
             </tr>;
             return row;
         });
+
+        // ScheduleConflict warning
+        const warningIcon = <FontIcon className="material-icons" style={{
+            fontSize: '14px',
+            color: '#ffbb40',
+            marginRight: 5
+        }}>error_outline</FontIcon>;
+        let scheduleConflictIcon = this.props.scheduleConflict ? warningIcon: null;
 
         return (
           <div className={this.state.boxClassName}>
@@ -332,14 +388,24 @@ class Semester extends Component {
                       </table>
 
                   </div>
-                  <div className="semester_summary"> Total ECTS points: {this.state.semester.ects}</div>
+                  <div className="semester_summary">
+                      <p className="semester_summary_ects">Total ECTS points: {this.state.semester.ects}</p>
+                  </div>
+                  <div className="semester_summary">
+                      <p className="semester_summary_ects">Total advanced ECTS points: {this.state.semester.advanced_ects}</p>
+                      <div className="warning_icon">
+                        <span className="hint--top hint--warning hint--rounded hint--medium" aria-label="This semester contains a scheduling conflict.">
+                            {scheduleConflictIcon}
+                        </span>
+                      </div>
+                  </div>
               </div>
           </div>
         );
     }
 }
 
-// The entire course plan site component
+/** The main course plan component that renders an entire course plan*/
 class CoursePlan extends Component {
     constructor(props) {
         super(props);
@@ -358,28 +424,27 @@ class CoursePlan extends Component {
 
     async componentWillMount() {
         let coursePlan = await this.getCoursePlan();
-        console.log(coursePlan);
         let username = await Auth.getUsername();
 
         if(coursePlan.success){
             this.setState({
-            username: username,
-            allowEdit: coursePlan.plan.owner === username,
-            planOwner: coursePlan.plan.owner,
-            planHash: coursePlan.plan.plan_hash,
-            ECTS: coursePlan.plan.ects,
-            advancedECTS: coursePlan.plan.advanced_ects,
-            plan: coursePlan.plan,
-            loading: false
-        });
+                username: username,
+                allowEdit: coursePlan.plan.owner === username,
+                planOwner: coursePlan.plan.owner,
+                planHash: coursePlan.plan.plan_hash,
+                ECTS: coursePlan.plan.ects,
+                advancedECTS: coursePlan.plan.advanced_ects,
+                plan: coursePlan.plan,
+                loading: false
+            });
         }
 
         else{
             this.setState({
-            username: username,
-            coursePlanDoesNotExists: true,
-            loading: false
-        });
+                username: username,
+                coursePlanDoesNotExists: true,
+                loading: false
+            });
         }
 
     }
@@ -400,6 +465,11 @@ class CoursePlan extends Component {
         return await request.json();
     }
 
+    /* Check if a semester has a scheduling conflict */
+    checkForScheduleConflict (semester){
+        return semester.schedule_conflict;
+    }
+
     render() {
 
         // Show loading icon when loading
@@ -417,32 +487,36 @@ class CoursePlan extends Component {
             // If the course plan does not exist, render template showing that
             if(this.state.coursePlanDoesNotExists){
                 return (
-              <div>
+                  <div>
                       <CoursePlanNotFound/>
-              </div>
-            );
+                  </div>
+                );
             }
 
             // But if we DO find a course plan, lets render it!
             else {
                 let plan = this.state.plan;
                 let semesters = plan.semesters;
+                let scheduleConflict = false; // init conflict to false
                 let semesterBoxes = [];
                 for (let i = 0; i < semesters.length; i++) {
-                    semesterBoxes.push(<Semester semesterIndex={i} semester={semesters[i]}/>)
+                    scheduleConflict = this.checkForScheduleConflict(semesters[i]);
+                    semesterBoxes.push(<Semester semesterIndex={i} semester={semesters[i]} scheduleConflict={scheduleConflict}/>)
                 }
 
                 return (
                   <div>
                       <Header user={this.state.username}/>
-                      <div className="toppadding100"></div>
+                      <div className="toppadding100"> </div>
                       <div className="content_wrapper">
                           {semesterBoxes}
 
                           <div className="lowest_wrapper">
-                              <CourseDashBoard username={this.state.username} allowEdit={this.state.allowEdit}
+                              <CourseDashBoard name={plan.name} scheduleConflict={scheduleConflict} username={this.state.username}
+                                               allowEdit={this.state.allowEdit} profile={plan.profile}
+                                               programme={plan.programme} planHash={this.state.planHash}
                                                owner={this.state.planOwner} ects={this.state.ECTS}
-                                               advancedECTS={this.state.advancedECTS}/>
+                                               advancedECTS={this.state.advancedECTS} editMode={false}/>
                           </div>
                       </div>
                   </div>
@@ -450,7 +524,6 @@ class CoursePlan extends Component {
             }
         }
     }
-
 }
 
 export default CoursePlan;
