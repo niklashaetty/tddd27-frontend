@@ -106,24 +106,27 @@ class CoursePlanEditor extends Component {
     }
 
     // Callback so that children of CoursePlanEditor can callback for re-rendering
-    // Also shows snackbar message.
+    // and show snackbar message.
     updateEditor = (response) => {
-        console.log("callback init");
+
         if(response.success){
-            this.setState({snackbarMessage: response.message,
-                snackbarColor: 'white'});
+            this.setState({
+                plan: null,
+                loading: true,
+            });
             this.componentWillMount();
+            this.setState({snackbarMessage: response.message,
+                snackbarColor: 'white',
+                loading: false,
+            });
         }
 
         else{
             this.setState({snackbarMessage: response.message,
-                snackbarColor: 'red'});
-
-
+                snackbarColor: 'red',
+            });
         }
         this.handleOpenSnackbar();
-        console.log("callback done");
-
     };
 
     /* Here is logic to handle the snackbar
@@ -186,7 +189,6 @@ class CoursePlanEditor extends Component {
                 snackbarMessage: response.message,
                 snackbarColor: 'white',
                 loadingAddingPlan: false
-
             });
         }
 
@@ -195,10 +197,8 @@ class CoursePlanEditor extends Component {
                 snackbarMessage: response.message,
                 snackbarColor: 'red',
                 loadingAddingPlan: false
-
             });
         }
-
         this.handleOpenSnackbar();
     }
 
@@ -256,10 +256,8 @@ class CoursePlanEditor extends Component {
 
         // all ok, render plan in editor mode.
         else {
-            console.log("rendering semesters");
 
             let semesterBoxes = this.fillSemesters(this.state.plan);
-            console.log(semesterBoxes);
             let addNewSemesterButton = null;
 
             if(semesterBoxes.length <= this.state.maxAllowedSemesters-1){
@@ -332,10 +330,7 @@ class CoursePlanEditor extends Component {
                               </div>
                           </div>
                       </div>;
-
                 }
-
-
             }
             let schedulingConflicts = CoursePlan.checkScheduleConflicts(this.state.plan);
             return (
