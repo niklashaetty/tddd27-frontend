@@ -2,7 +2,6 @@
  * Created by iinh on 4/19/17.
  */
 import React, {Component} from 'react';
-import {browserHistory} from 'react-router';
 
 // Material UI
 import CircularProgress from 'material-ui/CircularProgress';
@@ -101,7 +100,8 @@ class CoursePlanEditor extends Component {
             value: 2017,
             semester: 'Spring (VT)',
             loadingAddingPlan: false,
-            snackbarColor: 'white'
+            snackbarColor: 'white',
+            courseList: []
         };
     }
 
@@ -133,6 +133,8 @@ class CoursePlanEditor extends Component {
      that is used for feedback from adding a semester
      */
     handleOpenSnackbar = () => {
+        console.log("opening snackbar");
+        console.log(this.state.snackBarMessage);
         this.setState({
             snackbarOpen: true,
         });
@@ -144,9 +146,18 @@ class CoursePlanEditor extends Component {
         });
     };
 
+    // Get list of courses in list of json format.
+    static async getCourseList(){
+        const request = await fetch('https://tddd27-nikha864-backend.herokuapp.com/get_courses', {
+            method: 'get'
+        });
+        return await request.json();
+    }
+
     async componentWillMount() {
         let coursePlan = await this.getCoursePlan();
         let username = await Auth.getUsername();
+        let courseList = await CoursePlanEditor.getCourseList();
 
         if(coursePlan.success){
             this.setState({
@@ -164,6 +175,12 @@ class CoursePlanEditor extends Component {
                 username: username,
                 coursePlanDoesNotExists: true,
                 loading: false,
+            });
+        }
+
+        if(courseList.success){
+           this.setState({
+                courseList: courseList.courses
             });
         }
     }
@@ -219,7 +236,10 @@ class CoursePlanEditor extends Component {
         let semesters = this.state.plan.semesters;
         let semesterBoxes = [];
         for (let i = 0; i < semesters.length; i++) {
-            semesterBoxes.push(<Semester key={i} callback={this.updateEditor} plan={this.state.plan} editMode={true} semesterIndex={i} semester={semesters[i]} scheduleConflict={semesters[i].schedule_conflict}/>)
+            semesterBoxes.push(<Semester key={i} callback={this.updateEditor} plan={this.state.plan} editMode={true}
+                                         semesterIndex={i} semester={semesters[i]}
+                                         scheduleConflict={semesters[i].schedule_conflict}
+                                         courseList={this.state.courseList}/>)
         }
 
         return semesterBoxes;
@@ -257,7 +277,7 @@ class CoursePlanEditor extends Component {
         // all ok, render plan in editor mode.
         else {
 
-            let semesterBoxes = this.fillSemesters(this.state.plan);
+            let semesterBoxes = this.fillSemesters();
             let addNewSemesterButton = null;
 
             if(semesterBoxes.length <= this.state.maxAllowedSemesters-1){
@@ -275,6 +295,9 @@ class CoursePlanEditor extends Component {
 
                     case 3:
                         boxClassName = 'lower_right_wrapper';
+                        break;
+
+                    default:
                         break;
                 }
 
